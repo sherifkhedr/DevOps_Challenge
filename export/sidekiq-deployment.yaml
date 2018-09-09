@@ -1,0 +1,52 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose -v convert -f docker-compose.yml -o export
+    kompose.version: 1.1.0 (36652f6)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: sidekiq
+  name: sidekiq
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: sidekiq
+    spec:
+      containers:
+      - args:
+        - bundle
+        - exec
+        - sidekiq
+        - -C
+        - config/sidekiq.yml
+        env:
+        - name: CACHE_URL
+          value: redis://redis:6379/0
+        - name: DATABASE_URL
+          value: postgresql://drkiq:yourpassword@postgres:5432/drkiq?encoding=utf8&pool=5&timeout=5000
+        - name: JOB_WORKER_URL
+          value: redis://redis:6379/0
+        - name: LISTEN_ON
+          value: 0.0.0.0:8000
+        - name: SECRET_TOKEN
+          value: asecuretokenwouldnormallygohere
+        - name: WORKER_PROCESSES
+          value: "1"
+        image: sherifkhedr/sidekiq:tag
+        name: sidekiq
+        resources: {}
+        volumeMounts:
+        - mountPath: /drkiqs
+          name: drkiq-drkiq
+      restartPolicy: Always
+      volumes:
+      - name: drkiq-drkiq
+        persistentVolumeClaim:
+          claimName: drkiq-drkiq
+status: {}
