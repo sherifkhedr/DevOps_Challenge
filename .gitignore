@@ -16,3 +16,4 @@
 !/log/.keep
 /tmp
 docker-compose.yml.org
+Gemfile.lock
