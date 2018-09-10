@@ -1,39 +1,43 @@
-postgres:
-  image: postgres:9.4.5
-  environment:
-    POSTGRES_USER: drkiq
-    POSTGRES_PASSWORD: yourpassword
-  ports:
-    - '5432:5432'
-  volumes:
-    - drkiq-postgres:/var/lib/postgresql/data
+version: "2"
 
-redis:
-  image: redis:3.0.5
-  ports:
-    - '6379:6379'
-  volumes:
-    - drkiq-redis:/var/lib/redis/data
+services:
+  postgres:
+    image: postgres:9.4.5
+    environment:
+      POSTGRES_USER: drkiq
+      POSTGRES_PASSWORD: yourpassword
+    ports:
+      - '5432:5432'
+    volumes:
+      - drkiq-postgres:/var/lib/postgresql/data
 
-drkiq:
-  build: .
-  links:
-    - postgres
-    - redis
-  volumes:
-    - .:/drkiq
-  ports:
-    - '8000:8000'
-  env_file:
-    - .drkiq.env
+  redis:
+    image: redis:3.0.5
+    ports:
+      - '6379:6379'
+    volumes:
+      - drkiq-redis:/var/lib/redis/data
 
-sidekiq:
-  build: .
-  command: bundle exec sidekiq -C config/sidekiq.yml
-  links:
-    - postgres
-    - redis
-  volumes:
-    - .:/drkiq
-  env_file:
-    - .drkiq.env
+  drkiq:
+    build: .
+    image: sherifkhedr/drkiq:tag
+    links:
+      - postgres
+      - redis
+    volumes:
+      - drkiq-sherif:/drkiqs
+    ports:
+      - '8000:8000'
+   # env_file:
+     # - .drkiq.env
+  sidekiq:
+    build: .
+    command: bundle exec sidekiq -C config/sidekiq.yml
+    image: sherifkhedr/sidekiq:tag
+    links:
+      - postgres
+      - redis
+    volumes:
+      - drkiq-sherif:/drkiqs
+    #env_file:
+     # - .drkiq.env
